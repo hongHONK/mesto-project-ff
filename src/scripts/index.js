@@ -1,74 +1,44 @@
 import '../pages/index.css';
 import { initialCards } from '../components/cards';
-import { createCard, delCard, toggleLike } from '../components/card';
-import { openModal, closeModal } from '../components/modal';
-// @todo: DOM узлы
+import { createCard, delCard, toggleLike, openImageModal } from '../components/card';
+import { openModal, closeModal, setCloseModalByClickListeners } from '../components/modal';
+
 const container = document.querySelector('.content');
 const profileSection = container.querySelector('.profile');
 const profileTitle = profileSection.querySelector('.profile__title');
 const profileDescription = profileSection.querySelector('.profile__description');
+const profileEditBtn = profileSection.querySelector('.profile__edit-button');
+const profileAddBtn = profileSection.querySelector('.profile__add-button');
+
 const cardsContainer = container.querySelector('.places__list');
 
 const profileEditPopup = document.querySelector('.popup_type_edit');
 const profileAddPopup = document.querySelector('.popup_type_new-card');
 const cardPopup = document.querySelector('.popup_type_image');
 
-const editForm = document.forms[0];
-let nameInput = editForm.elements.name;
-let descriptionInput = editForm.elements.description;
+const editForm = document.querySelector('form[name = "edit-profile"]');
+const nameInput = editForm.querySelector('input[name = "name"]');
+const descriptionInput = editForm.querySelector('input[name = "description"]');
 
-const addForm = document.forms[1];
-const placeNameInput = addForm.elements[0];
-const linkInput = addForm.elements.link;
+const addForm = document.querySelector('form[name = "new-place"]');
+const placeNameInput = addForm.querySelector('input[name = "place-name"]');
+const linkInput = addForm.querySelector('input[name = "link"]');
 
-// @todo: Вывести карточки на страницу
-for (let i = 0; i < initialCards.length; i++) {
-    const card = createCard(initialCards[i], delCard, toggleLike);
+for (const cardData of initialCards) {
+    const card = createCard(cardData, delCard, toggleLike, openImageModal);
     cardsContainer.append(card);
 }
 
-profileSection.addEventListener('click', function (evt) {
-    if (evt.target.classList.contains('profile__edit-button')) {
-        openProfileEditModal(profileEditPopup);
-    }
+setCloseModalByClickListeners([profileEditPopup, profileAddPopup, cardPopup]);
 
-    if (evt.target.classList.contains('profile__add-button')) {
-        openImageAddModal(profileAddPopup);
-    }
-})
-
-cardsContainer.addEventListener('click', function(evt) {
-    if (evt.target.classList.contains('card__image')) {
-        openImageModal(cardPopup, evt.target);
-    }
-})
-
-editForm.addEventListener('submit', handleEditSubmit);
-addForm.addEventListener('submit', handleAddSubmit);
-
-function openProfileEditModal(modalElem) {
+function openProfileEditModal() {
     nameInput.value = profileTitle.textContent;
     descriptionInput.value = profileDescription.textContent;
-    
-    openModal(modalElem);
+    openModal(profileEditPopup);
 }
 
-function openImageAddModal(modalElem) {
-    openModal(modalElem);
-}
-
-function openImageModal(modalElem, evtTarget) {
-    const card = evtTarget.closest('.card');
-    const cardTitle = card.querySelector('.card__title');
-    const cardImage = card.querySelector('.card__image');
-    const popupCaption = modalElem.querySelector('.popup__caption');
-    const popupImage = modalElem.querySelector('.popup__image');
-    
-    popupCaption.textContent = cardTitle.textContent;
-    popupImage.setAttribute('alt', cardImage.getAttribute('alt'));
-    popupImage.setAttribute('src', cardImage.getAttribute('src'));
-
-    openModal(modalElem);
+function openProfileAddModal() {
+    openModal(profileAddPopup);
 }
 
 function handleEditSubmit(evt) {
@@ -77,19 +47,23 @@ function handleEditSubmit(evt) {
     profileTitle.textContent = nameInput.value;
     profileDescription.textContent = descriptionInput.value;
 
-    closeModal();
+    closeModal(profileEditPopup);
 
-    nameInput.value = '';
-    descriptionInput.value = '';
+    editForm.reset();
 }
 
 function handleAddSubmit(evt) {
     evt.preventDefault();
     
-    closeModal();
+    closeModal(profileAddPopup);
     const card = createCard({ name: placeNameInput.value, link: linkInput.value }, delCard, toggleLike);
-    cardsContainer.append(card);
+    cardsContainer.prepend(card);
 
-    placeNameInput.value = '';
-    linkInput.value = '';
+    addForm.reset();
 }
+
+profileEditBtn.addEventListener('click', openProfileEditModal);
+profileAddBtn.addEventListener('click', openProfileAddModal);
+
+editForm.addEventListener('submit', handleEditSubmit);
+addForm.addEventListener('submit', handleAddSubmit);
