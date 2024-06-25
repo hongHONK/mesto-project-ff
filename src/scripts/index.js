@@ -42,10 +42,6 @@ const validationConfig = {
     errorClass: 'popup__error_visible'
 };
 
-renderInitialCardsAndUserData();
-
-enableValidation(validationConfig); 
-
 setCloseModalByClickListeners([profileEditPopup, profileAddPopup, cardPopup, avatarEditPopup]);
 
 function renderInitialCardsAndUserData() {
@@ -189,6 +185,9 @@ function handleAvatarSubmit(evt) {
         avatarForm.reset();
     });
 }
+
+renderInitialCardsAndUserData();
+enableValidation(validationConfig); 
 
 profileEditBtn.addEventListener('click', openProfileEditModal);
 profileAddBtn.addEventListener('click', openAddCardModal);
