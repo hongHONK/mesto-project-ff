@@ -69,9 +69,14 @@ export const postCard = (cardData) => {
 }
 
 export const deleteCard = (cardId) => {
-    fetch(`${config.baseUrl}/cards/${cardId}`, {
+    return fetch(`${config.baseUrl}/cards/${cardId}`, {
         method: 'DELETE',
         headers: config.headers
+    })
+    .then(res => {
+        if (!res.ok) {
+            return Promise.reject(`Ошибка: ${res.status}`);
+        }
     });
 }
 

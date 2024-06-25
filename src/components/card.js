@@ -33,8 +33,9 @@ export function createCard (cardData, userIsOwner, cardIsLiked, handleDelete, ha
 }
 
 export function handleDelete(cardElement) {
-    deleteCard(cardElement.id);
-    cardElement.remove();
+    deleteCard(cardElement.id)
+    .catch(err => console.log(err))
+    .finally(() => cardElement.remove());
 }
 
 export function handleLike(likeButton, likeCounter) {
