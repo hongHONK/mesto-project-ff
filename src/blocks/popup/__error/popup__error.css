@@ -1,0 +1,8 @@
+.popup__error {
+    display: none;
+    position: absolute;
+    inline-size: calc(100% - 40px);
+    font-family: inherit;
+    font-size: 12px;
+    color: #f00;
+}
