@@ -51,9 +51,7 @@ function renderInitialCardsAndUserData() {
             const cardList = value[1];
             renderUserData(userData);
             cardList.forEach(cardData => {
-                const userIsOwner = userData['_id'] == cardData.owner['_id'];
-                const cardIsLiked = cardData.likes.some(user => userData['_id'] == user['_id']);
-                renderCard(cardData, userIsOwner, cardIsLiked, 'append');
+                renderCard(cardData, userData, 'append');
             })
         })
         .catch(err => {
@@ -67,8 +65,8 @@ function renderUserData(userData) {
     profileImage.style.backgroundImage = `url(${userData.avatar})`;
 }
 
-function renderCard(cardData, userIsOwner, cardIsLiked, method) {
-    const cardElement = createCard(cardData, userIsOwner, cardIsLiked, handleDelete, handleLike, openImageModal);
+function renderCard(cardData, userData, method) {
+    const cardElement = createCard(cardData, userData, handleDelete, handleLike, openImageModal);
     
     switch (method) {
         case 'append': 
@@ -108,10 +106,7 @@ function openAvatarEditModal() {
     openModal(avatarEditPopup);
 } 
 
-function openImageModal(cardData) {
-    const cardTitle = cardData.querySelector('.card__title');
-    const cardImage = cardData.querySelector('.card__image');
-    
+function openImageModal(cardTitle, cardImage) {    
     cardPopupCaption.textContent = cardTitle.textContent;
     cardPopupImage.setAttribute('alt', cardImage.getAttribute('alt'));
     cardPopupImage.setAttribute('src', cardImage.getAttribute('src'));
@@ -153,6 +148,13 @@ function handleAddSubmit(evt) {
 
     renderLoading(evt.target, true);
 
+    Promise.all([postCard(cardData),getUserData()])
+    .then(res => {
+        const cardData = res[0];
+        const userData = res[1];
+        renderCard(cardData, userData, 'prepend');
+    })
+
     postCard(cardData)
     .then(cardData => {
         renderCard(cardData, true, false, 'prepend');
@@ -171,7 +173,6 @@ function handleAvatarSubmit(evt) {
     evt.preventDefault();
 
     const avatarLink = avatarLinkInput.value;
-    console.log(evt.target);
     renderLoading(evt.target, true);
 
     patchUserAvatar(avatarLink)

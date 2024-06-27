@@ -13,8 +13,10 @@ function handleCloseModalByOverlayClick(evt) {
 }
 
 function handleCloseModalByEsc(evt) {
-    const openedPopup = document.querySelector('.popup_is-opened');
-    if (evt.key === 'Escape') closeModal(openedPopup);
+    if (evt.key === 'Escape') {
+        const openedPopup = document.querySelector('.popup_is-opened');
+        closeModal(openedPopup);
+    }
 }
 
 export function setCloseModalByClickListeners(popupList) {

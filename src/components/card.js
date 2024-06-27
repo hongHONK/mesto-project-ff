@@ -2,7 +2,7 @@ import { deleteCard, deleteLikeStatus, putLikeStatus } from "./api";
 
 const cardTemplate = document.querySelector('#card-template').content;
 
-export function createCard (cardData, userIsOwner, cardIsLiked, handleDelete, handleLike, onImageClick) {
+export function createCard (cardData, userData, handleDelete, handleLike, onImageClick) {
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
     const cardTitle = cardElement.querySelector('.card__title');
     const cardImage = cardElement.querySelector('.card__image');
@@ -16,16 +16,16 @@ export function createCard (cardData, userIsOwner, cardIsLiked, handleDelete, ha
     cardImage.setAttribute('alt', cardData.name);
     cardImage.setAttribute('src', cardData.link);
 
-    cardImage.addEventListener('click', () => onImageClick(cardElement));
+    cardImage.addEventListener('click', () => onImageClick(cardTitle, cardImage));
     cardLikeButton.addEventListener('click',() => handleLike(cardLikeButton, cardLikeCounter));
 
-    if (userIsOwner) {
+    if (userData['_id'] == cardData.owner['_id']) {
         cardDelButton.addEventListener('click',() => handleDelete(cardElement));
     } else {
         cardDelButton.remove();
     }
 
-    if (cardIsLiked) {
+    if (cardData.likes.some(user => userData['_id'] == user['_id'])) {
         cardLikeButton.classList.add('card__like-button_is-active');
     }
 
@@ -34,8 +34,8 @@ export function createCard (cardData, userIsOwner, cardIsLiked, handleDelete, ha
 
 export function handleDelete(cardElement) {
     deleteCard(cardElement.id)
-    .catch(err => console.log(err))
-    .finally(() => cardElement.remove());
+    .then(() => cardElement.remove())
+    .catch(err => console.log(err));
 }
 
 export function handleLike(likeButton, likeCounter) {
