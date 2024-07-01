@@ -2,7 +2,7 @@ import { deleteCard, deleteLikeStatus, putLikeStatus } from "./api";
 
 const cardTemplate = document.querySelector('#card-template').content;
 
-export function createCard (cardData, userData, handleDelete, handleLike, onImageClick) {
+export function createCard (cardData, userId, handleDelete, handleLike, onImageClick) {
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true);
     const cardTitle = cardElement.querySelector('.card__title');
     const cardImage = cardElement.querySelector('.card__image');
@@ -19,13 +19,13 @@ export function createCard (cardData, userData, handleDelete, handleLike, onImag
     cardImage.addEventListener('click', () => onImageClick(cardTitle, cardImage));
     cardLikeButton.addEventListener('click',() => handleLike(cardLikeButton, cardLikeCounter));
 
-    if (userData['_id'] == cardData.owner['_id']) {
+    if (userId == cardData.owner['_id']) {
         cardDelButton.addEventListener('click',() => handleDelete(cardElement));
     } else {
         cardDelButton.remove();
     }
 
-    if (cardData.likes.some(user => userData['_id'] == user['_id'])) {
+    if (cardData.likes.some(userData => userId == userData['_id'])) {
         cardLikeButton.classList.add('card__like-button_is-active');
     }
 
@@ -43,19 +43,19 @@ export function handleLike(likeButton, likeCounter) {
     const cardIsLiked = likeButton.classList.contains('card__like-button_is-active');
 
     if (cardIsLiked) {
-        likeButton.classList.remove('card__like-button_is-active');
         deleteLikeStatus(cardId)
         .then(cardData => {
             likeCounter.textContent = cardData.likes.length;
+            likeButton.classList.remove('card__like-button_is-active');
         })
         .catch(err => {
             console.log(err);
         });
     } else {
-        likeButton.classList.add('card__like-button_is-active');
         putLikeStatus(cardId)
         .then(cardData => {
             likeCounter.textContent = cardData.likes.length;
+            likeButton.classList.add('card__like-button_is-active');
         })
         .catch(err => {
             console.log(err);

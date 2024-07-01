@@ -33,6 +33,8 @@ const avatarLinkInput = avatarForm.querySelector('input[name = "avatar-link"]');
 const cardPopupCaption = cardPopup.querySelector('.popup__caption');
 const cardPopupImage = cardPopup.querySelector('.popup__image');
 
+let userId = null;
+
 const validationConfig = {
     formSelector: '.popup__form',
     inputSelector: '.popup__input',
@@ -42,7 +44,13 @@ const validationConfig = {
     errorClass: 'popup__error_visible'
 };
 
-setCloseModalByClickListeners([profileEditPopup, profileAddPopup, cardPopup, avatarEditPopup]);
+function getAndSaveUserId() {
+    getUserData()
+    .then(res => {
+        userId = res['_id'];
+    })
+    .catch(err => console.log(err));
+}
 
 function renderInitialCardsAndUserData() {
     Promise.all([getUserData(), getInitialCards()])
@@ -51,7 +59,7 @@ function renderInitialCardsAndUserData() {
             const cardList = value[1];
             renderUserData(userData);
             cardList.forEach(cardData => {
-                renderCard(cardData, userData, 'append');
+                renderCard(cardData, 'append');
             })
         })
         .catch(err => {
@@ -65,8 +73,8 @@ function renderUserData(userData) {
     profileImage.style.backgroundImage = `url(${userData.avatar})`;
 }
 
-function renderCard(cardData, userData, method) {
-    const cardElement = createCard(cardData, userData, handleDelete, handleLike, openImageModal);
+function renderCard(cardData, method) {
+    const cardElement = createCard(cardData, userId, handleDelete, handleLike, openImageModal);
     
     switch (method) {
         case 'append': 
@@ -127,14 +135,14 @@ function handleEditSubmit(evt) {
     patchUserData(userData)
     .then(userData => {
         renderUserData(userData);
+        closeModal(profileEditPopup);
+        editForm.reset();
     })
     .catch(err => {
         console.log(err);
     })
     .finally(() => {
         renderLoading(evt.target, false);
-        closeModal(profileEditPopup);
-        editForm.reset();
     });
 }
 
@@ -148,24 +156,17 @@ function handleAddSubmit(evt) {
 
     renderLoading(evt.target, true);
 
-    Promise.all([postCard(cardData),getUserData()])
-    .then(res => {
-        const cardData = res[0];
-        const userData = res[1];
-        renderCard(cardData, userData, 'prepend');
-    })
-
     postCard(cardData)
     .then(cardData => {
-        renderCard(cardData, true, false, 'prepend');
+        renderCard(cardData, 'prepend');
+        closeModal(profileAddPopup);
+        addForm.reset();
     })
     .catch(err => {
         console.log(err);
     })
     .finally(() => {
         renderLoading(evt.target, false);
-        closeModal(profileAddPopup);
-        addForm.reset();
     });
 }
 
@@ -176,17 +177,21 @@ function handleAvatarSubmit(evt) {
     renderLoading(evt.target, true);
 
     patchUserAvatar(avatarLink)
+    .then(() => {
+        profileImage.style.backgroundImage = `url(${avatarLink})`;
+        closeModal(avatarEditPopup);
+        avatarForm.reset();
+    })
     .catch(err => {
         console.log(err);
     })
     .finally(() => {
         renderLoading(evt.target, false);
-        profileImage.style.backgroundImage = `url(${avatarLink})`;
-        closeModal(avatarEditPopup);
-        avatarForm.reset();
     });
 }
 
+setCloseModalByClickListeners([profileEditPopup, profileAddPopup, cardPopup, avatarEditPopup]);
+getAndSaveUserId();
 renderInitialCardsAndUserData();
 enableValidation(validationConfig); 
 
